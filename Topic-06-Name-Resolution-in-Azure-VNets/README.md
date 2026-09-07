@@ -11,7 +11,7 @@ This topic covers the main name-resolution ideas from the Azure VNet design less
 
 ## Traffic-flow diagram
 
-![Name resolution in Azure VNets](./azure_name_resolution_vnet.png)
+![Name resolution in Azure VNets](./azure_dns.png)
 
 ## Core mental model
 
