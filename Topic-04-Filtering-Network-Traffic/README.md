@@ -7,7 +7,7 @@ This topic focuses on how Azure decides whether traffic is allowed after a route
 
 ## Traffic-flow diagram
 
-![Filtering network traffic](./azure_network_traffic_filtering_infographic.png)
+![Filtering network traffic](./azure_network_filtering.png)
 
 ## Core mental model
 
