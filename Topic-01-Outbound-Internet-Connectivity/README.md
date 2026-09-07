@@ -8,7 +8,7 @@ This topic covers three common ways Azure resources can reach the internet:
 
 ## Traffic-flow diagram
 
-![Azure VNet outbound internet connectivity](./azure-vnet-outbound-internet-connectivity.png)
+![Azure VNet outbound internet connectivity](./azure_vnet_outbound_internet_methods.png)
 
 ## Core mental model
 
