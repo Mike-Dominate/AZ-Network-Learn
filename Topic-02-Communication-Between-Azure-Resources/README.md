@@ -9,7 +9,7 @@ This topic covers four common ways Azure resources communicate:
 
 ## Traffic-flow diagram
 
-![Communication between Azure resources](./azure_resource_communication_guide.png)
+![Communication between Azure resources](./azure_communication_within_resources.png)
 
 ## Core mental model
 
