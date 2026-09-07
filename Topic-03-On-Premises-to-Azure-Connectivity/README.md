@@ -8,7 +8,7 @@ This topic covers three common ways users and on-premises networks connect to Az
 
 ## Traffic-flow diagram
 
-![On-premises to Azure connectivity](./azure_onprem_to_azure_connectivity.png)
+![On-premises to Azure connectivity](./azure_communication_with_On-Prem.png)
 
 ## Core mental model
 
