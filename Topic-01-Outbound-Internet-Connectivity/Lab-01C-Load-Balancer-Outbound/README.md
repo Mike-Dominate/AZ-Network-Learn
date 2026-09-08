@@ -2,9 +2,7 @@
 
 ## Objective
 
-Remove the VM's direct public IP and use a Standard Public Load Balancer outbound rule to provide Internet connectivity for backend pool members.
-
-> **Beginner note:** Azure assigns the actual frontend public IP when the resource is created. Your value will normally be different from another learner's value. Validate that the Internet-observed source IP matches the Load Balancer frontend public IP.
+Remove the VM's direct public IP and provide outbound Internet connectivity through a Standard Public Load Balancer outbound rule.
 
 ## Step 1 — Remove the VM public IP
 
@@ -93,37 +91,26 @@ az network public-ip show `
   --output tsv
 ```
 
-Record the value returned as:
-
-```text
-<LOAD_BALANCER_PUBLIC_IP>
-```
+Record the result as `<LOAD_BALANCER_PUBLIC_IP>`.
 
 ## Step 8 — Test from inside the VM
-
-In the Bastion terminal:
 
 ```bash
 curl -4 -s https://api.ipify.org
 echo
 ```
 
-Record the value returned as:
+Record the result as `<OBSERVED_EGRESS_IP>`.
+
+## Validation
+
+The lab passes when:
 
 ```text
-<OBSERVED_EGRESS_IP>
+<OBSERVED_EGRESS_IP> = <LOAD_BALANCER_PUBLIC_IP>
 ```
 
-## Expected result
-
-`<OBSERVED_EGRESS_IP>` must match `<LOAD_BALANCER_PUBLIC_IP>`.
-
-```text
-VM public IP:                None
-LB frontend public IP:       <LOAD_BALANCER_PUBLIC_IP>
-Internet-observed source IP: <OBSERVED_EGRESS_IP>
-Status:                      PASS when the two public IP values match
-```
+The VM should have no public IP of its own.
 
 ## Traffic flow
 
@@ -136,32 +123,21 @@ Load Balancer backend pool
       v
 Outbound rule
       |
-      | SNAT uses the Load Balancer frontend public IP
+      | SNAT uses frontend public IP
       v
-Internet destination
+Internet
       |
-      | reply returns to the frontend public IP
+      | reply returns to Load Balancer
       v
 Load Balancer
       |
-      | connection mapping returns the reply
+      | connection mapping returns response
       v
 Private VM
 ```
 
-## Skill you are building
+## Why this matters
 
-You are learning how to provide **shared outbound connectivity to selected backend workloads** through a Standard Public Load Balancer outbound rule.
-
-### Where this skill is used in the real world
-
-- Groups of web or application servers already placed behind a Standard Load Balancer.
-- Environments where backend pool membership determines which workloads share the frontend public identity.
-- Troubleshooting SNAT and outbound connectivity for load-balanced applications.
-- Cloud networking, infrastructure engineering, platform operations, and production support roles.
-
-## Beginner takeaway
-
-A Load Balancer outbound rule applies to members of its **backend pool**. Multiple backend VMs can therefore share the Load Balancer frontend public IP for outbound connections.
+A Load Balancer outbound rule provides a shared public identity to selected backend pool members. This is useful when workloads are already part of a Standard Load Balancer design and outbound behavior needs to follow backend pool membership.
 
 Back to: [Lab 1 overview](../LAB-01-README.md)
