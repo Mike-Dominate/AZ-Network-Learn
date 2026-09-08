@@ -1,81 +1,36 @@
 # Topic 1 — Azure VNet Outbound Internet Connectivity
 
-This topic covers three common ways Azure resources can reach the Internet:
+Azure workloads often use private IP addresses but still need to initiate connections to the public Internet. This topic introduces three explicit outbound connectivity methods and then turns them into a beginner hands-on lab.
 
-1. **NAT Gateway** — multiple private resources share one or more public IP addresses for outbound connectivity.
-2. **Public IP on a VM** — a VM has its own public Internet identity.
-3. **Public Load Balancer outbound SNAT** — backend VMs can use the Load Balancer frontend public IP for outbound connections.
+## The three outbound methods
 
-## Traffic-flow diagram
+| Method | Public identity is provided by | Grouping model |
+|---|---|---|
+| **NAT Gateway** | NAT Gateway public IP or prefix | Subnet |
+| **Public IP on a VM** | Public IP attached to the VM NIC | Individual VM |
+| **Standard Public Load Balancer outbound rule** | Load Balancer frontend public IP | Backend pool |
 
-![Azure VNet outbound internet connectivity](./azure_vnet_outbound_internet_methods.png)
+## Concept diagram
+
+![Azure VNet outbound Internet methods](./azure_vnet_outbound_internet_methods.png)
 
 ## Core mental model
 
-- **NAT Gateway:** private machines → shared outbound public identity → Internet.
-- **Public IP on VM:** one VM → its own public identity → Internet.
-- **Public Load Balancer:** backend pool → Load Balancer frontend public identity → Internet.
+- **NAT Gateway:** private workloads share a subnet-level outbound public identity.
+- **VM public IP:** one VM has its own public identity.
+- **Load Balancer outbound rule:** selected backend pool members share the Load Balancer frontend public identity.
 
-The important idea is that a private Azure resource needs an outbound mechanism that gives its traffic a publicly routable source identity before the traffic can traverse the public Internet.
+The important question in every scenario is:
 
----
+> **Which Azure resource provides the public source identity seen by the Internet?**
 
-# Hands-on Lab 1 — Beginner implementation
+## Topic 1 learning path
 
-The theory above is implemented as a complete beginner lab using one private Ubuntu VM and three outbound scenarios.
+1. **Understand the three methods** — this page.
+2. **Build and test them step by step** — [Lab 1 guided implementation](./LAB-01-README.md).
+3. **Rebuild the solution independently** — [Lab 1 final assignment](./LAB-01-ASSIGNMENT.md).
+4. **Answer the interview challenge** — included at the end of the final assignment.
 
-> **Course note:** Azure-assigned IP addresses are intentionally not published as expected answers. Each learner must inspect the addresses created in their own environment and prove that the correct Azure resource supplies the public outbound identity.
+## Start the hands-on lab
 
-The guided lab pages use generic traffic-flow descriptions instead of fixed Azure-assigned IP values so the material remains reusable for every learner.
-
-## Guided lab sequence
-
-1. [Lab 1 overview and common setup](./LAB-01-README.md)
-2. [Lab 1A — NAT Gateway](./Lab-01A-NAT-Gateway/README.md)
-3. [Lab 1B — Public IP on the VM](./Lab-01B-VM-Public-IP/README.md)
-4. [Lab 1C — Public Load Balancer outbound SNAT](./Lab-01C-Load-Balancer-Outbound/README.md)
-
-## What the learner must prove
-
-| Scenario | Validation target |
-|---|---|
-| Baseline — no outbound mechanism | DNS can resolve, but the Internet connection fails |
-| Lab 1A — NAT Gateway | Internet-observed source IP matches the NAT Gateway public IP |
-| Lab 1B — VM Public IP | Internet-observed source IP matches the VM public IP |
-| Lab 1C — Load Balancer outbound | Internet-observed source IP matches the Load Balancer frontend public IP |
-
-The lab starts with a VM that has no public IP and `defaultOutboundAccess = false`, proves that DNS resolution can still work while Internet traffic fails, and then enables each outbound mechanism one at a time.
-
----
-
-# Skills gained
-
-By completing Topic 1, the learner should be able to:
-
-- Build and validate Azure NAT Gateway outbound connectivity.
-- Configure a VM with its own public IP and verify its public source identity.
-- Configure a Standard Public Load Balancer backend pool and outbound rule.
-- Test outbound connectivity from inside a Linux VM.
-- Distinguish DNS resolution from actual Internet reachability.
-- Explain the difference between subnet-level, VM-level, and backend-pool-level outbound designs.
-- Select an outbound method based on workload requirements rather than simply attaching public IPs everywhere.
-
-## Real-world application
-
-These skills apply to private application servers, web farms, partner/API allowlisting, software update paths, test systems, cloud migrations, and production troubleshooting. They are directly relevant to Azure Administrator, Cloud Engineer, Infrastructure Engineer, Network Engineer, Platform Engineer, and Cloud Support roles.
-
----
-
-# Independent assessment
-
-After completing the guided labs, the learner must rebuild and validate all three approaches from a real-world scenario **without implementation commands**.
-
-[**Lab 1 Final Assignment — Real-World Outbound Connectivity Challenge**](./LAB-01-ASSIGNMENT.md)
-
-The assignment also contains five job interview questions:
-
-- 2 simple
-- 2 medium
-- 1 hard
-
-The learner should be able to answer them in their own words after completing the practical work.
+[**Continue to Lab 1 — Azure VM Outbound Internet Connectivity**](./LAB-01-README.md)
