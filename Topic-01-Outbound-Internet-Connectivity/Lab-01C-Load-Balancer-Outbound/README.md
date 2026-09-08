@@ -2,7 +2,9 @@
 
 ## Objective
 
-Remove the VM's direct public IP and use a Standard Public Load Balancer outbound rule to provide Internet connectivity.
+Remove the VM's direct public IP and use a Standard Public Load Balancer outbound rule to provide Internet connectivity for backend pool members.
+
+> **Beginner note:** Azure assigns the actual frontend public IP when the resource is created. Your value will normally be different from another learner's value. Validate that the Internet-observed source IP matches the Load Balancer frontend public IP.
 
 ## Step 1 — Remove the VM public IP
 
@@ -20,12 +22,6 @@ Delete the old VM public IP:
 az network public-ip delete `
   --resource-group $RG `
   --name $VMPIP
-```
-
-The VM is private again:
-
-```text
-10.50.1.4
 ```
 
 ## Step 2 — Set Load Balancer variables
@@ -47,12 +43,6 @@ az network public-ip create `
   --location $LOC `
   --sku Standard `
   --allocation-method Static
-```
-
-Observed public IP:
-
-```text
-52.187.242.240
 ```
 
 ## Step 4 — Create the Standard Public Load Balancer
@@ -93,7 +83,7 @@ az network lb outbound-rule create `
   --enable-tcp-reset true
 ```
 
-## Step 7 — Verify the Load Balancer public IP
+## Step 7 — Record the Load Balancer frontend public IP
 
 ```powershell
 az network public-ip show `
@@ -103,10 +93,10 @@ az network public-ip show `
   --output tsv
 ```
 
-Observed:
+Record the value returned as:
 
 ```text
-52.187.242.240
+<LOAD_BALANCER_PUBLIC_IP>
 ```
 
 ## Step 8 — Test from inside the VM
@@ -118,26 +108,27 @@ curl -4 -s https://api.ipify.org
 echo
 ```
 
-Observed:
+Record the value returned as:
 
 ```text
-52.187.242.240
+<OBSERVED_EGRESS_IP>
 ```
 
-## Result
+## Expected result
+
+`<OBSERVED_EGRESS_IP>` must match `<LOAD_BALANCER_PUBLIC_IP>`.
 
 ```text
-VM private IP:       10.50.1.4
-VM public IP:        None
-LB frontend IP:      52.187.242.240
-Internet observed:   52.187.242.240
-Status:              PASS
+VM public IP:                None
+LB frontend public IP:       <LOAD_BALANCER_PUBLIC_IP>
+Internet-observed source IP: <OBSERVED_EGRESS_IP>
+Status:                      PASS when the two public IP values match
 ```
 
 ## Traffic flow
 
 ```text
-VM 10.50.1.4
+Private VM
       |
       v
 Load Balancer backend pool
@@ -145,23 +136,32 @@ Load Balancer backend pool
       v
 Outbound rule
       |
+      | SNAT uses the Load Balancer frontend public IP
       v
-SNAT to 52.187.242.240
+Internet destination
       |
-      v
-Internet
-      |
-      | reply to 52.187.242.240
+      | reply returns to the frontend public IP
       v
 Load Balancer
       |
-      | connection mapping
+      | connection mapping returns the reply
       v
-VM 10.50.1.4
+Private VM
 ```
+
+## Skill you are building
+
+You are learning how to provide **shared outbound connectivity to selected backend workloads** through a Standard Public Load Balancer outbound rule.
+
+### Where this skill is used in the real world
+
+- Groups of web or application servers already placed behind a Standard Load Balancer.
+- Environments where backend pool membership determines which workloads share the frontend public identity.
+- Troubleshooting SNAT and outbound connectivity for load-balanced applications.
+- Cloud networking, infrastructure engineering, platform operations, and production support roles.
 
 ## Beginner takeaway
 
-The Load Balancer provides outbound connectivity only for backend pool members covered by the outbound rule. Multiple backend VMs can share the Load Balancer frontend public IP.
+A Load Balancer outbound rule applies to members of its **backend pool**. Multiple backend VMs can therefore share the Load Balancer frontend public IP for outbound connections.
 
 Back to: [Lab 1 overview](../LAB-01-README.md)
