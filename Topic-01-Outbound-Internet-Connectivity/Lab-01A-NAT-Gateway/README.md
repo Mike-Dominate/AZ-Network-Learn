@@ -2,9 +2,7 @@
 
 ## Objective
 
-Give a private VM outbound Internet access using an Azure NAT Gateway while keeping the VM itself without a public IP.
-
-> **Beginner note:** Azure assigns IP addresses when resources are created. Your values will normally be different from another learner's values. Validate relationships between resources instead of comparing literal IP addresses.
+Give the private VM outbound Internet access through an Azure NAT Gateway while keeping the VM itself without a public IP.
 
 ## Step 1 — Set variables
 
@@ -13,7 +11,7 @@ $NAT    = "nat-topic1-outbound"
 $NATPIP = "pip-nat-topic1-outbound"
 ```
 
-## Step 2 — Create a Standard public IP for the NAT Gateway
+## Step 2 — Create a Standard public IP
 
 ```powershell
 az network public-ip create `
@@ -34,7 +32,7 @@ az network nat gateway create `
   --public-ip-addresses $NATPIP
 ```
 
-## Step 4 — Attach the NAT Gateway to the workload subnet
+## Step 4 — Associate the NAT Gateway with the workload subnet
 
 ```powershell
 az network vnet subnet update `
@@ -54,37 +52,26 @@ az network public-ip show `
   --output tsv
 ```
 
-Record the value returned as:
-
-```text
-<NAT_GATEWAY_PUBLIC_IP>
-```
+Record the result as `<NAT_GATEWAY_PUBLIC_IP>`.
 
 ## Step 6 — Test from inside the VM
-
-In the Bastion terminal:
 
 ```bash
 curl -4 -s https://api.ipify.org
 echo
 ```
 
-Record the value returned as:
+Record the result as `<OBSERVED_EGRESS_IP>`.
+
+## Validation
+
+The lab passes when:
 
 ```text
-<OBSERVED_EGRESS_IP>
+<OBSERVED_EGRESS_IP> = <NAT_GATEWAY_PUBLIC_IP>
 ```
 
-## Expected result
-
-`<OBSERVED_EGRESS_IP>` must match `<NAT_GATEWAY_PUBLIC_IP>`.
-
-```text
-VM public IP:                None
-NAT Gateway public IP:       <NAT_GATEWAY_PUBLIC_IP>
-Internet-observed source IP: <OBSERVED_EGRESS_IP>
-Status:                      PASS when the two public IP values match
-```
+The VM itself should still have no public IP.
 
 ## Traffic flow
 
@@ -97,32 +84,21 @@ Workload subnet
     v
 NAT Gateway
     |
-    | source is translated to the NAT Gateway public IP
+    | SNAT to NAT Gateway public IP
     v
-Internet destination
+Internet
     |
-    | reply returns to the NAT Gateway public IP
+    | response returns to NAT Gateway
     v
 NAT Gateway
     |
-    | connection mapping sends the reply back
+    | connection mapping returns response
     v
 Private VM
 ```
 
-## Skill you are building
+## Why this matters
 
-You are learning to provide **predictable shared outbound Internet connectivity for private workloads** without assigning a public IP to each VM.
-
-### Where this skill is used in the real world
-
-- Private application servers that must download updates or call external APIs.
-- Workloads that connect to a partner or SaaS provider that requires a known source IP for an allowlist.
-- Subnets containing multiple private VMs that should share controlled outbound connectivity.
-- Cloud networking, platform engineering, infrastructure, and security operations roles.
-
-## Beginner takeaway
-
-A NAT Gateway is associated with a **subnet**. Eligible resources in that subnet can use the NAT Gateway's public IP for outbound connections.
+NAT Gateway is useful when multiple private workloads need a shared, predictable outbound identity without receiving individual public IP addresses. It is associated with the **subnet**, so eligible resources in that subnet can use it for outbound connections.
 
 Next: [Lab 1B — Public IP on the VM](../Lab-01B-VM-Public-IP/README.md)
