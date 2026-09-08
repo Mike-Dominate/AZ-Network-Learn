@@ -29,15 +29,9 @@ By the end of Lab 1, the learner should be able to:
 | **Assessment** | Rebuild the three approaches independently from a real-world brief |
 | **Interview challenge** | Answer five job-style questions based directly on the lab |
 
-## Lab visuals
-
-### Concept overview
+## Lab visual
 
 ![Azure VNet outbound Internet methods](./azure_vnet_outbound_internet_methods.png)
-
-### Teaching summary used for this lab
-
-![Azure VNet outbound Internet teaching method](./azure_vnet_outbound_internet_teaching%20Method.png)
 
 ---
 
