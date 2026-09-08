@@ -2,7 +2,9 @@
 
 ## Objective
 
-Remove the NAT Gateway from the traffic path and give the VM its own public IP address for outbound Internet connectivity.
+Give a VM its own public IP address and verify that its outbound Internet traffic uses that public identity.
+
+> **Beginner note:** Azure assigns the actual IP address when the resource is created. Your value will normally be different from another learner's value. Validate that the IP observed from the Internet matches the public IP attached to your VM.
 
 ## Step 1 — Detach the NAT Gateway
 
@@ -27,12 +29,6 @@ az network public-ip create `
   --allocation-method Static
 ```
 
-Observed public IP:
-
-```text
-20.213.95.101
-```
-
 ## Step 3 — Attach the public IP to the VM NIC
 
 ```powershell
@@ -43,7 +39,7 @@ az network nic ip-config update `
   --public-ip-address $VMPIP
 ```
 
-## Step 4 — Verify the public IP
+## Step 4 — Record the VM public IP
 
 ```powershell
 az network public-ip show `
@@ -53,10 +49,10 @@ az network public-ip show `
   --output tsv
 ```
 
-Observed:
+Record the value returned as:
 
 ```text
-20.213.95.101
+<VM_PUBLIC_IP>
 ```
 
 ## Step 5 — Test from inside the VM
@@ -68,32 +64,32 @@ curl -4 -s https://api.ipify.org
 echo
 ```
 
-Observed:
+Record the value returned as:
 
 ```text
-20.213.95.101
+<OBSERVED_EGRESS_IP>
 ```
 
-## Result
+## Expected result
+
+`<OBSERVED_EGRESS_IP>` must match `<VM_PUBLIC_IP>`.
 
 ```text
-VM private IP:      10.50.1.4
-VM public IP:       20.213.95.101
-Internet observed:  20.213.95.101
-Status:             PASS
+VM public IP:                <VM_PUBLIC_IP>
+Internet-observed source IP: <OBSERVED_EGRESS_IP>
+Status:                      PASS when the values match
 ```
 
 ## Traffic flow
 
 ```text
-VM
-Private IP: 10.50.1.4
-Public IP:  20.213.95.101
+VM with public IP
       |
+      | outbound request uses the VM public identity
       v
-Internet
+Internet destination
       |
-      | reply to 20.213.95.101
+      | reply returns to the VM public IP
       v
 Azure networking
       |
@@ -101,8 +97,19 @@ Azure networking
 VM
 ```
 
+## Skill you are building
+
+You are learning how to give a single Azure VM a **direct public network identity** and verify how that identity is used for outbound traffic.
+
+### Where this skill is used in the real world
+
+- Small test or demonstration VMs that need direct Internet connectivity.
+- Temporary administrative or troubleshooting systems where a dedicated public identity is acceptable.
+- Understanding why assigning public IPs broadly can increase the exposure and management burden of an environment.
+- Cloud support, systems administration, infrastructure engineering, and network operations roles.
+
 ## Beginner takeaway
 
-In this scenario, the public identity belongs directly to the VM NIC. Unlike NAT Gateway, this public IP is specific to this VM.
+In this scenario, the public identity belongs directly to the VM NIC. It is specific to that VM rather than shared by a whole subnet or a Load Balancer backend pool.
 
 Next: [Lab 1C — Public Load Balancer outbound SNAT](../Lab-01C-Load-Balancer-Outbound/README.md)
