@@ -12,9 +12,7 @@ This beginner lab uses one private Azure VM to prove three different ways that o
 | [Lab 1B](./Lab-01B-VM-Public-IP/README.md) | Public IP on VM | VM public IP |
 | [Lab 1C](./Lab-01C-Load-Balancer-Outbound/README.md) | Standard Public Load Balancer outbound SNAT | Load Balancer frontend public IP |
 
-## Completed traffic flows
-
-![Topic 1 lab outbound traffic flows](./azure_vnet_outbound_internet_methods_flow.png)
+Each guided lab includes its own outbound and return traffic flow using generic placeholders rather than fixed Azure-assigned addresses.
 
 ---
 
