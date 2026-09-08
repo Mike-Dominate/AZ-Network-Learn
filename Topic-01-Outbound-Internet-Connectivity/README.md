@@ -26,9 +26,7 @@ The theory above is implemented as a complete beginner lab using one private Ubu
 
 > **Course note:** Azure-assigned IP addresses are intentionally not published as expected answers. Each learner must inspect the addresses created in their own environment and prove that the correct Azure resource supplies the public outbound identity.
 
-## Lab flow
-
-![Topic 1 lab outbound traffic flows](./azure_vnet_outbound_internet_methods_flow.png)
+The guided lab pages use generic traffic-flow descriptions instead of fixed Azure-assigned IP values so the material remains reusable for every learner.
 
 ## Guided lab sequence
 
