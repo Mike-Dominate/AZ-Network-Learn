@@ -16,7 +16,7 @@ The company has three workload groups:
 2. A **temporary troubleshooting VM** needs its own public identity so an administrator can test connectivity independently.
 3. A **web-server group** will sit behind a Standard Public Load Balancer. The backend VMs must remain without individual public IP addresses but still need outbound Internet connectivity through the Load Balancer.
 
-Design, deploy, test, and document all three solutions.
+Design, deploy, test, document, and safely remove all three solutions when finished.
 
 ---
 
@@ -66,6 +66,7 @@ Prove that:
 - Use an interactive method that lets you run tests from inside the VM.
 - Choose a currently available, appropriately small VM size.
 - Do not copy IP addresses from the guided lab; inspect and validate your own environment.
+- Keep assignment resources grouped so they can be safely removed when the assessment is complete.
 
 ---
 
@@ -79,6 +80,11 @@ For each design, collect enough evidence to prove that the architecture works:
 - The public source IP observed by the external service.
 - A short explanation of why the result proves the intended design is working.
 - A simple outbound-and-return traffic flow diagram.
+
+For teardown, also collect evidence that:
+
+- The assignment resource group was deleted.
+- A verification check confirms the resource group no longer exists.
 
 ---
 
@@ -107,6 +113,8 @@ Private backend VM
 ```
 
 You must also be able to explain why you would choose one method over another in a real environment.
+
+The final teardown is considered successful only when your verification shows that the assignment resource group no longer exists.
 
 ---
 
@@ -146,6 +154,7 @@ You should be able to:
 2. Test each design from inside the VM.
 3. Identify which Azure resource supplied the public source identity.
 4. Explain the outbound and return traffic flow.
-5. Answer all five interview questions in your own words.
+5. Delete the assignment environment and verify that cleanup is complete.
+6. Answer all five interview questions in your own words.
 
 Back to: [Lab 1 overview](./LAB-01-README.md)
