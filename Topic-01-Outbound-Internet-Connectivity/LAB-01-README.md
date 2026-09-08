@@ -1,26 +1,49 @@
 # Lab 1 — Azure VM Outbound Internet Connectivity
 
-This beginner lab uses one private Azure VM to prove three different ways that outbound Internet connectivity can work.
+This beginner lab turns Topic 1 theory into a repeatable hands-on exercise. You will build one private Ubuntu VM, prove that explicit outbound connectivity is initially unavailable, and then enable outbound Internet access three different ways.
 
-> **Important:** Do not compare your Azure-assigned IP addresses with another learner's values. Azure assigns addresses dynamically from the resources you create. What matters is that the IP observed from the Internet matches the correct Azure resource for each scenario.
+> **Important:** Do not compare Azure-assigned IP addresses with another learner's values. What matters is whether the Internet-observed source IP matches the correct Azure resource for each scenario.
 
-## Lab structure
+## Lab outcomes
 
-| Lab | Scenario | What provides the public source IP? |
-|---|---|---|
-| [Lab 1A](./Lab-01A-NAT-Gateway/README.md) | NAT Gateway | NAT Gateway public IP |
-| [Lab 1B](./Lab-01B-VM-Public-IP/README.md) | Public IP on VM | VM public IP |
-| [Lab 1C](./Lab-01C-Load-Balancer-Outbound/README.md) | Standard Public Load Balancer outbound SNAT | Load Balancer frontend public IP |
+By the end of Lab 1, the learner should be able to:
 
-Each guided lab includes its own outbound and return traffic flow using generic placeholders rather than fixed Azure-assigned addresses.
+- Build and validate outbound connectivity using an Azure NAT Gateway.
+- Give a VM its own public IP and verify that identity.
+- Configure a Standard Public Load Balancer backend pool and outbound rule.
+- Test from inside a Linux VM and identify the public source IP seen by an Internet service.
+- Distinguish DNS resolution from actual Internet reachability.
+- Explain when subnet-level, VM-level, and backend-pool-level outbound designs are appropriate.
+
+## Lab map
+
+| Stage | Purpose |
+|---|---|
+| **Common setup** | Build the VNet, private subnet, NIC, VM, and Bastion access |
+| **Baseline** | Prove DNS works while Internet connectivity fails |
+| **Lab 1A** | Enable outbound access through NAT Gateway |
+| **Lab 1B** | Enable outbound access through a VM public IP |
+| **Lab 1C** | Enable outbound access through a Standard Public Load Balancer outbound rule |
+| **Assessment** | Rebuild the three approaches independently from a real-world brief |
+| **Interview challenge** | Answer five job-style questions based directly on the lab |
+
+## Lab visuals
+
+### Concept overview
+
+![Azure VNet outbound Internet methods](./azure_vnet_outbound_internet_methods.png)
+
+### Teaching summary used for this lab
+
+![Azure VNet outbound Internet teaching method](./azure_vnet_outbound_internet_teaching%20Method.png)
 
 ---
 
-# Common setup
+# Part 1 — Common setup
 
-The same VM is reused through all three scenarios so that only the outbound mechanism changes.
+The same VM is reused through all three guided scenarios so that only the outbound mechanism changes.
 
-## Resources used
+## Resources
 
 ```text
 Resource Group:  rg-az700-topic1-outbound-aue
@@ -83,11 +106,11 @@ az network vnet subnet show `
   --output table
 ```
 
-Expected result: `DefaultOutbound` is `False`.
+Expected: `DefaultOutbound` is `False`.
 
 ---
 
-# Create the private VM
+# Part 2 — Create the private VM
 
 ## Step 5 — Set VM variables
 
@@ -109,7 +132,7 @@ az network nic create `
 
 ## Step 7 — Select an available small VM size
 
-VM SKU availability can vary by region and time. Check what is currently available instead of copying a size blindly:
+VM SKU availability changes by region and time. Check what is currently available:
 
 ```powershell
 az vm list-skus `
@@ -120,7 +143,7 @@ az vm list-skus `
   --output table
 ```
 
-Choose a small available B-series SKU and set it as `$VMSIZE`:
+Choose a small available B-series size:
 
 ```powershell
 $VMSIZE = "<AVAILABLE_B_SERIES_SIZE>"
@@ -150,7 +173,7 @@ az network nic show `
   --output json
 ```
 
-Expected result:
+Expected:
 
 ```text
 PrivateIP: <AZURE_ASSIGNED_PRIVATE_IP>
@@ -159,9 +182,9 @@ PublicIP:  null
 
 ---
 
-# Browser access with Azure Bastion Developer
+# Part 3 — Browser access with Azure Bastion Developer
 
-The VM deliberately has no public IP, so Azure Bastion Developer is used for an interactive browser terminal while keeping the VM private.
+The VM is intentionally private. Bastion Developer gives the learner an interactive browser terminal without attaching a public IP to the VM.
 
 ## Step 8 — Create Bastion Developer
 
@@ -200,25 +223,27 @@ Use the `azureuser` account and the SSH private key created by Azure CLI.
 
 ---
 
-# Baseline test — prove Internet access does not work yet
+# Part 4 — Baseline test
 
-Run the following commands inside the VM through Bastion.
+The baseline proves that name resolution can work even when the VM still lacks an explicit public outbound mechanism.
 
-## Step 9 — Inspect the VM addresses
+Run these commands inside the VM through Bastion.
+
+## Step 9 — Inspect the VM address
 
 ```bash
 ip -br addr
 ```
 
-Confirm that the primary interface has an address from the workload subnet.
+Confirm that the primary interface has an IP from the workload subnet.
 
-## Step 10 — Inspect the Linux route table
+## Step 10 — Inspect the route table
 
 ```bash
 ip route
 ```
 
-Confirm that a default route exists. A default route alone does not guarantee that the VM has a valid public outbound mechanism.
+Confirm that a default route exists. A default route does **not** by itself guarantee working Internet egress.
 
 ## Step 11 — Test DNS resolution
 
@@ -226,40 +251,40 @@ Confirm that a default route exists. A default route alone does not guarantee th
 getent ahostsv4 api.ipify.org
 ```
 
-Expected: DNS returns one or more public IPv4 addresses.
+Expected: one or more IPv4 addresses are returned.
 
 **DNS result: PASS**
 
-## Step 12 — Test real outbound Internet connectivity
+## Step 12 — Test outbound Internet connectivity
 
 ```bash
 curl -4 -v --connect-timeout 5 --max-time 10 https://api.ipify.org
 ```
 
-Expected: the connection times out because the VM has no explicit outbound Internet mechanism yet.
+Expected: the connection times out because no explicit outbound Internet mechanism has been configured yet.
 
-**Internet result: FAIL — expected baseline behavior**
-
-This proves that DNS resolution and outbound Internet connectivity are separate things.
+**Internet result: expected to fail at baseline**
 
 ---
 
-# Continue with the three scenarios
+# Part 5 — Guided scenarios
 
-1. [Lab 1A — NAT Gateway](./Lab-01A-NAT-Gateway/README.md)
-2. [Lab 1B — Public IP on the VM](./Lab-01B-VM-Public-IP/README.md)
-3. [Lab 1C — Public Load Balancer outbound SNAT](./Lab-01C-Load-Balancer-Outbound/README.md)
+Complete the scenarios in this order so that each test isolates one outbound method.
 
-## Final validation pattern
+1. [**Lab 1A — NAT Gateway**](./Lab-01A-NAT-Gateway/README.md)
+2. [**Lab 1B — Public IP on the VM**](./Lab-01B-VM-Public-IP/README.md)
+3. [**Lab 1C — Standard Public Load Balancer outbound SNAT**](./Lab-01C-Load-Balancer-Outbound/README.md)
 
-| Test | What the learner should prove | Status |
-|---|---|---|
-| Baseline | DNS works but Internet access fails | PASS when observed |
-| Lab 1A — NAT Gateway | Observed egress IP matches NAT Gateway public IP | PASS when matched |
-| Lab 1B — VM Public IP | Observed egress IP matches VM public IP | PASS when matched |
-| Lab 1C — Load Balancer | Observed egress IP matches Load Balancer frontend public IP | PASS when matched |
+## Validation pattern
 
-The test command used in all three working scenarios is:
+| Scenario | What must be proven |
+|---|---|
+| Baseline | DNS resolves but the Internet connection fails |
+| Lab 1A | Internet-observed source IP matches the NAT Gateway public IP |
+| Lab 1B | Internet-observed source IP matches the VM public IP |
+| Lab 1C | Internet-observed source IP matches the Load Balancer frontend public IP |
+
+Use this inside the VM for the working scenarios:
 
 ```bash
 curl -4 -s https://api.ipify.org
@@ -268,37 +293,30 @@ echo
 
 ---
 
-# Skills gained from Lab 1
+# Part 6 — Skill application
 
-By completing Lab 1A, 1B, and 1C, the learner should be able to:
+These skills apply in real environments when you need to:
 
-- Explain the difference between **private addressing** and a **public outbound identity**.
-- Build and validate outbound Internet connectivity using a **NAT Gateway**.
-- Attach and validate a **public IP directly on a VM**.
-- Configure a **Standard Public Load Balancer backend pool and outbound rule**.
-- Test outbound connectivity from inside a Linux VM and identify the public source IP seen by an Internet service.
-- Understand the difference between **DNS resolution**, **routing**, and **outbound translation/SNAT**.
-- Compare subnet-based, VM-based, and backend-pool-based outbound designs.
+- Provide predictable outbound source IPs for partner or SaaS allowlists.
+- Give private application servers controlled Internet access for updates or external APIs.
+- Support web or application server farms behind a Standard Load Balancer.
+- Troubleshoot why a workload can resolve DNS but still cannot establish an Internet connection.
+- Avoid assigning public IPs to every VM when a shared outbound design is more appropriate.
 
-## Where these skills are applied in the real world
-
-These skills are used when designing or supporting:
-
-- Private application servers that need outbound package updates or access to third-party APIs.
-- Workloads that must connect to partners that allowlist known public source IPs.
-- Web and application server farms behind Azure Load Balancer.
-- Test or administrative VMs that temporarily require their own public identity.
-- Environments where architects must reduce unnecessary public IP exposure while still allowing controlled outbound access.
-- Roles such as Azure Administrator, Cloud Engineer, Infrastructure Engineer, Network Engineer, Platform Engineer, and Cloud Support Engineer.
+Typical roles using these skills include Azure Administrator, Cloud Engineer, Infrastructure Engineer, Network Engineer, Platform Engineer, and Cloud Support Engineer.
 
 ---
 
-# Final assignment — build it again without instructions
+# Part 7 — Independent assessment
 
-When you have completed Lab 1A, 1B, and 1C, continue to the independent assignment:
+After completing Lab 1A, 1B, and 1C, rebuild and validate all three approaches from a real-world brief **without implementation commands**:
 
 [**Lab 1 Final Assignment — Real-World Outbound Connectivity Challenge**](./LAB-01-ASSIGNMENT.md)
 
-The assignment intentionally gives you requirements but **does not provide implementation commands**. You must build the solution using what you learned in the guided labs.
+The same assessment ends with five interview questions:
 
-After the assignment, complete the five job interview questions at the end of the assignment document.
+- 2 simple
+- 2 medium
+- 1 hard
+
+A learner should be able to answer them in their own words after completing the practical work.
