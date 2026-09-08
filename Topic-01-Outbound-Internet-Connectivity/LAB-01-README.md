@@ -14,6 +14,7 @@ By the end of Lab 1, the learner should be able to:
 - Test from inside a Linux VM and identify the public source IP seen by an Internet service.
 - Distinguish DNS resolution from actual Internet reachability.
 - Explain when subnet-level, VM-level, and backend-pool-level outbound designs are appropriate.
+- Safely tear down the lab and verify that billable resources have been removed.
 
 ## Lab map
 
@@ -24,6 +25,7 @@ By the end of Lab 1, the learner should be able to:
 | **Lab 1A** | Enable outbound access through NAT Gateway |
 | **Lab 1B** | Enable outbound access through a VM public IP |
 | **Lab 1C** | Enable outbound access through a Standard Public Load Balancer outbound rule |
+| **Teardown** | Delete the guided lab environment and verify cleanup |
 | **Assessment** | Rebuild the three approaches independently from a real-world brief |
 | **Interview challenge** | Answer five job-style questions based directly on the lab |
 
@@ -293,7 +295,61 @@ echo
 
 ---
 
-# Part 6 — Skill application
+# Part 6 — Guided lab teardown
+
+Azure resources can continue generating charges after the practical exercise is finished. Do not leave the lab running unless you deliberately want to keep it.
+
+This lab keeps its resources in one dedicated resource group so cleanup is simple.
+
+## Step 13 — Review what will be deleted
+
+Run from PowerShell:
+
+```powershell
+az resource list `
+  --resource-group $RG `
+  --query "[].{Name:name,Type:type}" `
+  --output table
+```
+
+Confirm that the resource group contains only resources created for this lab.
+
+## Step 14 — Delete the complete lab resource group
+
+```powershell
+az group delete `
+  --name $RG `
+  --yes
+```
+
+Do not use `--no-wait` for this beginner lab. Allow the delete command to finish before verifying cleanup.
+
+## Step 15 — Verify teardown is complete
+
+```powershell
+az group exists `
+  --name $RG
+```
+
+Expected result:
+
+```text
+false
+```
+
+If the result is `true`, wait briefly and run the verification command again. Do not consider the lab cleaned up until the resource group no longer exists.
+
+### Teardown success criteria
+
+```text
+Resource group exists: false
+```
+
+Because all guided-lab resources were created inside this dedicated resource group, confirming that the resource group no longer exists confirms that those contained resources have been removed as well.
+
+---
+
+# Part 7 — Skill application
 
 These skills apply in real environments when you need to:
 
@@ -307,9 +363,9 @@ Typical roles using these skills include Azure Administrator, Cloud Engineer, In
 
 ---
 
-# Part 7 — Independent assessment
+# Part 8 — Independent assessment
 
-After completing Lab 1A, 1B, and 1C, rebuild and validate all three approaches from a real-world brief **without implementation commands**:
+After completing and tearing down the guided Lab 1 environment, rebuild and validate all three approaches from a real-world brief **without implementation commands**:
 
 [**Lab 1 Final Assignment — Real-World Outbound Connectivity Challenge**](./LAB-01-ASSIGNMENT.md)
 
